@@ -1,0 +1,7 @@
+instances:
+  - name: els
+    dns:
+      - els
+      - localhost
+    ip:
+      - 127.0.0.1

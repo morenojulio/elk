@@ -1,0 +1,65 @@
+version: '3.4'
+
+services:
+  els:
+    container_name: els
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.6.1
+    ports:
+      - 9200:9200
+    environment:
+      - xpack.watcher.enabled=false
+      - xpack.security.enabled=true
+      - xpack.security.http.ssl.enabled=true
+      - xpack.security.http.ssl.key=certs/els/els.key
+      - xpack.security.http.ssl.certificate=certs/els/els.crt
+      - xpack.security.http.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.enabled=true
+      - xpack.security.transport.ssl.key=certs/els/els.key
+      - xpack.security.transport.ssl.certificate=certs/els/els.crt
+      - xpack.security.transport.ssl.certificate_authorities=certs/ca/ca.crt
+      - xpack.security.transport.ssl.verification_mode=none
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - discovery.type=single-node
+    volumes:
+      - certs:/usr/share/elasticsearch/config/certs
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    networks:
+      - elasticnetwork
+    
+  kibana:
+    depends_on:
+      - els
+    image: docker.elastic.co/kibana/kibana:${STACK_VERSION}
+    volumes:
+      - certs:/usr/share/kibana/config/certs
+    ports:
+      - ${KIBANA_PORT}:5601
+    environment:
+      - SERVERNAME=kibana
+      - ELASTICSEARCH_HOSTS=https://els:9200
+      - ELASTICSEARCH_USERNAME=kibana_system
+      - ELASTICSEARCH_PASSWORD=$KIBANA_PASSWORD
+      - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
+    mem_limit: ${MEM_LIMIT}
+    networks:
+      - elasticnetwork
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "curl -s -I http://localhost:5601 | grep -q 'HTTP/1.1 302 Found'",
+        ]
+      interval: 10s
+      timeout: 10s
+      retries: 120
+
+networks:
+  elasticnetwork:
+    driver: bridge
+      
+volumes:
+  certs:
+    driver: local
+  elasticsearch-data:
+    driver: local
