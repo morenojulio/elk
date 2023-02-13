@@ -1,10 +1,17 @@
 version: '2.2'
 
 services:
+  certbot:
+    image: certbot/certbot:latest
+    volumes:
+      - certs:/var/www/certbot/:rw
+      - certs:/etc/letsencrypt/:rw
+
   setup:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
       - certs:/usr/share/elasticsearch/config/certs
+      
     user: "0"
     command: >
       bash -c '
@@ -34,6 +41,12 @@ services:
           bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
           unzip config/certs/certs.zip -d config/certs;
         fi;
+        # if [ ! -f config/certs/kibana-server/kibcert.zip ]; then
+        #   echo "Creating kibana certs";
+        #   bin/elasticsearch-certutil csr -name kibana-server -dns elsburlao.eastus2.cloudapp.azure.com -out config/certs/kibcert.zip;
+        #   unzip config/certs/kibcert.zip -d config/certs;
+        #   openssl x509 -req -in config/certs/kibana-server/kibana-server.csr -signkey config/certs/kibana-server/kibana-server.key -out config/certs/kibserv.crt
+        # fi;
         echo "Setting file permissions"
         chown -R root:root config/certs;
         find . -type d -exec chmod 750 \{\} \;;
@@ -44,6 +57,8 @@ services:
         until curl -s -X POST --cacert config/certs/ca/ca.crt -u "elastic:${ELASTIC_PASSWORD}" -H "Content-Type: application/json" https://els:9200/_security/user/kibana_system/_password -d "{\"password\":\"${KIBANA_PASSWORD}\"}" | grep -q "^{}"; do sleep 10; done;
         echo "All done!";
       '
+
+      
     healthcheck:
       test: ["CMD-SHELL", "[ -f config/certs/els/els.crt ]"]
       interval: 1s
