@@ -43,7 +43,7 @@ services:
         fi;
         if [ ! -f config/certs/kibana-server/kibcert.zip ]; then
           echo "Creating kibana certs";
-          bin/elasticsearch-certutil csr -name kibana-server -dns elsburlao.eastus2.cloudapp.azure.com -out config/certs/kibcert.zip;
+          bin/elasticsearch-certutil csr -name kibana-server -dns elsburlao.cubik.online -out config/certs/kibcert.zip;
           unzip config/certs/kibcert.zip -d config/certs;
           openssl x509 -req -in config/certs/kibana-server/kibana-server.csr -signkey config/certs/kibana-server/kibana-server.key -out config/certs/kibserv.crt
         fi;
