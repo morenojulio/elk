@@ -41,12 +41,12 @@ services:
           bin/elasticsearch-certutil cert --silent --pem -out config/certs/certs.zip --in config/certs/instances.yml --ca-cert config/certs/ca/ca.crt --ca-key config/certs/ca/ca.key;
           unzip config/certs/certs.zip -d config/certs;
         fi;
-        # if [ ! -f config/certs/kibana-server/kibcert.zip ]; then
-        #   echo "Creating kibana certs";
-        #   bin/elasticsearch-certutil csr -name kibana-server -dns elsburlao.eastus2.cloudapp.azure.com -out config/certs/kibcert.zip;
-        #   unzip config/certs/kibcert.zip -d config/certs;
-        #   openssl x509 -req -in config/certs/kibana-server/kibana-server.csr -signkey config/certs/kibana-server/kibana-server.key -out config/certs/kibserv.crt
-        # fi;
+        if [ ! -f config/certs/kibana-server/kibcert.zip ]; then
+          echo "Creating kibana certs";
+          bin/elasticsearch-certutil csr -name kibana-server -dns elsburlao.eastus2.cloudapp.azure.com -out config/certs/kibcert.zip;
+          unzip config/certs/kibcert.zip -d config/certs;
+          openssl x509 -req -in config/certs/kibana-server/kibana-server.csr -signkey config/certs/kibana-server/kibana-server.key -out config/certs/kibserv.crt
+        fi;
         echo "Setting file permissions"
         chown -R root:root config/certs;
         find . -type d -exec chmod 750 \{\} \;;
