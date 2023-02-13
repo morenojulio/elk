@@ -40,7 +40,7 @@ services:
       - ELASTICSEARCH_HOSTS=https://els:9200
       - ELASTICSEARCH_USERNAME=kibana_system
       - ELASTICSEARCH_PASSWORD=$KIBANA_PASSWORD
-      - SERVER_SSL_ENABLED=true
+      - SERVER_SSL_ENABLED=false
       # - SERVER_SSL_CERTIFICATE=config/certs/kibserv.crt
       # - SERVER_SSL_KEY=config/certs/kibana-server/kibana-server.key
       - ELASTICSEARCH_SSL_CERTIFICATEAUTHORITIES=config/certs/ca/ca.crt
